@@ -23,11 +23,7 @@ import argparse
 from argparse import RawTextHelpFormatter
 from multiprocessing import cpu_count
 import tempfile
-# this is required to manage the images
-try:
-    from PIL import Image
-except ImportError:
-    import Image
+from PIL import Image
 
 # This is the default size when loading a Raw image
 sizeOfRaw = (512, 512)

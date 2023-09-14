@@ -22,11 +22,8 @@ import argparse
 from argparse import RawTextHelpFormatter
 from multiprocessing import cpu_count
 import tempfile
-# this is required to manage the images
-try:
-    from PIL import Image
-except ImportError:
-    import Image
+from PIL import Image
+
 try:
     import numpy as np
     from scipy import ndimage, misc

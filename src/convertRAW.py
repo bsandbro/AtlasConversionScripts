@@ -21,17 +21,11 @@ import math
 import argparse
 from argparse import RawTextHelpFormatter
 from multiprocessing import cpu_count
-import tempfile# this is required to manage the images
-try:
-    from PIL import Image
-except ImportError:
-    import Image
-# Scipy dependencies
-try:
-    import numpy as np
-    from scipy import ndimage, misc
-except ImportError:
-    print("You need SciPy and Numpy (http://numpy.scipy.org/)!")
+import tempfile
+from PIL import Image
+import numpy as np
+from scipy import ndimage, misc
+
 
 # This is the default size when loading a Raw image
 sizeOfRaw = (256, 256)
