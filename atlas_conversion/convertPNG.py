@@ -16,13 +16,13 @@
 # limitations under the License.
 
 import os
-import sys
 import errno
 import math
-import argparse
-from argparse import RawTextHelpFormatter
 from multiprocessing import cpu_count
 import tempfile
+import dask as da
+import h5py
+import numpy as np
 from PIL import Image
 
 from atlas_conversion.utils import calculate_gradient
@@ -159,146 +159,5 @@ def ImageSlices2TiledImage(filenames, loadImgFunction=load_png, cGradient=False,
     return imout, gradient, size, numberOfSlices, slicesPerAxis
 
 
-# This functions takes a (tiled) image and writes it to a png file with base filename outputFilename.
-# It also writes several versions in different sizes determined by dimensions
-def write_versions(tileImage, tileGradient, outputFilename, dimensions=None):
-    if dimensions is None:
-        dimensions = [8192, 4096, 2048, 1024, 512]
-    try:
-        print('Creating folder', os.path.dirname(outputFilename), '...', end=' ')
-        os.makedirs(os.path.dirname(outputFilename))
-    except OSError as exc:
-        if exc.errno == errno.EEXIST and os.path.isdir(os.path.dirname(outputFilename)):
-            print('was already there.')
-        else:
-            print(', folders might not be created, trying to write anyways...')
-    except:
-        print("Could not create folders, trying to write anyways...")
-
-    print("Writing complete image: " + outputFilename + "_full.png")
-    try:
-        tileImage.save(outputFilename + "_full.png", "PNG")
-        if tileGradient:
-            tileGradient.save(outputFilename + "_gradient_full.png", "PNG")
-    except:
-        print("Failed writing ", outputFilename + "_full.png")
-    for dim in dimensions:
-        if tileImage.size[0] > dim:
-            print("Writing " + str(dim) + "x" + str(dim) + " version: " + outputFilename + "_" + str(dim) + ".png")
-            try:
-                tmpImage = tileImage.resize((dim, dim))
-                tmpImage.save(outputFilename + "_" + str(dim) + ".png", "PNG")
-            except:
-                print("Failed writing ", outputFilename, "_", str(dim), ".png")
-            if tileGradient:
-                try:
-                    tmpImage = tileGradient.resize((dim, dim))
-                    tmpImage.save(outputFilename + "_gradient_" + str(dim) + ".png", "PNG")
-                except:
-                    print("Failed writing ", outputFilename, "_gradient_", str(dim), ".png")
 
 
-# This function lists the files within a given directory dir
-def listdir_fullpath(d):
-    return [os.path.join(d, f) for f in os.listdir(d)]
-
-
-######################################
-# Main program - CLI with argparse - #
-######################################
-def main():
-    # Define th CLI
-    parser = argparse.ArgumentParser(prog='PNG Atlas Generator',
-                                     description='''
-PNG Atlas generation utility
-----------------------------\n
-
-This application converts the slices found in a folder into a tiled 2D texture
-image in PNG format.\nIt uses Python with PIL, numpy and pydicom packages are recommended for other formats.
-\n
-Note: this version does not process several folders recursively.''',
-                                     epilog='''
-This code was created by Luis Kabongo.
-Modified by Ander Arbelaiz to add gradient calculation.\n
-Information links:
- - https://github.com/VolumeRC/AtlasConversionScripts/wiki
- - http://www.volumerc.org
- - http://demos.vicomtech.org
-Contact mailto:volumerendering@vicomtech.org''',
-                                     formatter_class=RawTextHelpFormatter)
-    parser.add_argument('input', type=str, help='must contain a path to one set of PNG files to be processed')
-    parser.add_argument('output', type=str,
-                        help='must contain the path and base name of the desired output,\n'
-                             'extension will be added automatically')
-    parser.add_argument('--resize', '-r', type=int, nargs=2, metavar=('x', 'y'),
-                        help='resizing of the input images x y, before processing')
-    parser.add_argument('--gradient', '-g', action='store_true',
-                        help='calculate and generate the gradient atlas')
-    parser.add_argument('--standard_deviation', '-std', type=int, default=2,
-                        help='standard deviation for the gaussian kernel used for the gradient computation')
-
-    # Obtain the parsed arguments
-    print("Parsing arguments...")
-    arguments = parser.parse_args()
-
-    # Filter only png files in the given folder
-    filenames_png = [x for x in listdir_fullpath(arguments.input) if ".png" in x]
-
-    if not len(filenames_png) > 0:
-        print("No PNG files found in that folder, check your parameters or contact the authors :).")
-        return 2
-
-    if arguments.resize:
-        width, height = arguments.resize[0], arguments.resize[1]
-    else:
-        width, height = None, None
-
-    # Update global value for standard_deviation
-    sigmaValue = arguments.standard_deviation
-
-    c_gradient = False
-    if arguments.gradient:
-        try:
-            global ndimage, misc, np, da, delayed, h5py
-            import numpy as np
-            import dask.array as da
-            import h5py
-            from dask import delayed
-            from scipy import ndimage, misc
-            c_gradient = True
-        except ImportError:
-            print("You need the following dependencies to also calculate the gradient: scipy, numpy, h5py and dask")
-
-    # From png files
-    imgTile, gradientTile, sliceResolution, numberOfSlices, slicesPerAxis = ImageSlices2TiledImage(filenames_png,
-                                                                                                   load_png,
-                                                                                                   c_gradient,
-                                                                                                   width,
-                                                                                                   height)
-
-    # Write a text file containing the number of slices for reference
-    try:
-        try:
-            print('Creating folder', os.path.dirname(arguments.output), '...', end=' ')
-            os.makedirs(os.path.dirname(arguments.output))
-        except OSError as exc:
-            if exc.errno == errno.EEXIST and os.path.isdir(os.path.dirname(arguments.output)):
-                print('was already there.')
-            else:
-                print(', folders might not be created, trying to write anyways...')
-        except:
-            print(", could not create folders, trying to write anyways...")
-        with open(str(arguments.output) + "_AtlasDim.txt", 'w') as f:
-            f.write(str((numberOfSlices, (slicesPerAxis, slicesPerAxis))))
-    except:
-        print("Could not write a text file", str(arguments.output) + "_AtlasDim.txt", \
-            "containing dimensions (total slices, slices per axis):", (numberOfSlices, (slicesPerAxis, slicesPerAxis)))
-    else:
-        print("Created", arguments.output + "_AtlasDim.txt", "containing dimensions (total slices, slices per axis):",\
-            (numberOfSlices, (slicesPerAxis, slicesPerAxis)))
-
-    # Output is written in different sizes
-    write_versions(imgTile, gradientTile, arguments.output)
-
-if __name__ == "__main__":
-    sys.exit(main())
