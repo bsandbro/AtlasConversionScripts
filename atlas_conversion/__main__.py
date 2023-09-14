@@ -1,6 +1,4 @@
 import argparse
-import errno
-import os
 import sys
 
 from atlas_conversion.convertPNG import ImageSlices2TiledImage, load_png
@@ -57,9 +55,6 @@ Contact mailto:volumerendering@vicomtech.org''',
     else:
         width, height = None, None
 
-    # Update global value for standard_deviation
-    sigmaValue = arguments.standard_deviation
-
     c_gradient = False
     if arguments.gradient:
         try:
@@ -80,32 +75,10 @@ Contact mailto:volumerendering@vicomtech.org''',
                                                                                                    width,
                                                                                                    height)
 
-    # # Write a text file containing the number of slices for reference
-    # try:
-    #     try:
-    #         print('Creating folder', arguments.output, '...', end=' ')
-    #         os.makedirs(arguments.output)
-    #     except OSError as exc:
-    #         if exc.errno == errno.EEXIST and os.path.isdir(os.path.dirname(arguments.output)):
-    #             print('was already there.')
-    #         else:
-    #             print(', folders might not be created, trying to write anyways...')
-    #     except:
-    #         print(", could not create folders, trying to write anyways...")
-    #     with open(str(arguments.output) + "_AtlasDim.txt", 'w') as f:
-    #         f.write(str((numberOfSlices, (slicesPerAxis, slicesPerAxis))))
-    # except:
-    #     print("Could not write a text file", str(arguments.output) + "_AtlasDim.txt", \
-    #         "containing dimensions (total slices, slices per axis):", (numberOfSlices, (slicesPerAxis, slicesPerAxis)))
-    # else:
-    #     print("Created", arguments.output + "_AtlasDim.txt", "containing dimensions (total slices, slices per axis):",\
-    #         (numberOfSlices, (slicesPerAxis, slicesPerAxis)))
-
     # Write the output
     print("Writing output...")
     with open(str(arguments.output) + "_AtlasDim.txt", 'w') as f:
         f.write(str((numberOfSlices, (slicesPerAxis, slicesPerAxis))))
-
 
     # Output is written in different sizes
     write_versions(imgTile, gradientTile, arguments.output)
