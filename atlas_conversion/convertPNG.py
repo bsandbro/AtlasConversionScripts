@@ -109,10 +109,7 @@ def ImageSlices2TiledImage(filenames, loadImgFunction=load_png, cGradient=False,
         image_list = [da.from_array(np.array(read_image(f, loadImgFunction, r_width, r_height),
                                              dtype='uint8'), chunks=size) for f in filenames]
         data = da.stack(image_list, axis=-1)
-        cpus = cpu_count()
-        chunk_size = [x//cpus for x in data.shape]
-        print(("Calculated chunk size: "+str(chunk_size)))
-        data = da.rechunk(data, chunks=chunk_size)
+        data = da.rechunk(data)
         print(("Loading complete. Data size: "+str(data.shape)))
         print("Computing the gradient...")
         data = data.astype(np.float32)
@@ -134,7 +131,7 @@ def ImageSlices2TiledImage(filenames, loadImgFunction=load_png, cGradient=False,
         channels = ['/r', '/g', '/b']
         handle = h5py.File(f.name)
         dsets = [handle[c] for c in channels]
-        arrays = [da.from_array(dset, chunks=chunk_size) for dset in dsets]
+        arrays = [da.from_array(dset) for dset in dsets]
         gradient_data = da.stack(arrays, axis=-1)
 
         for i in range(0, numberOfSlices):
