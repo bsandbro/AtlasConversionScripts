@@ -29,8 +29,6 @@ from PIL import Image
 sizeOfRaw = (512, 512)
 # This determines if the endianness should be reversed
 rawByteSwap = True
-# Standard deviation for Gaussian kernel 
-sigmaValue = 2
 
 
 # Simple decrement function

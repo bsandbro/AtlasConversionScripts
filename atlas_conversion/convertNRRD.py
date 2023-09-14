@@ -23,16 +23,13 @@ from argparse import RawTextHelpFormatter
 from multiprocessing import cpu_count
 import tempfile
 from PIL import Image
+import numpy as np
+from scipy import ndimage, misc
 
-try:
-    import numpy as np
-    from scipy import ndimage, misc
-except ImportError:
-    print('You need scipy.ndimage, scipy.misc and Numpy (http://numpy.scipy.org/)')
-    exit()
+from atlas_conversion.utils import calculate_gradient
 
-# Standard deviation for Gaussian kernel 
-sigmaValue = 2
+
+
 
 
 # Simple decrement function
