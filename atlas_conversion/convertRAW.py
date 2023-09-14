@@ -24,7 +24,7 @@ from multiprocessing import cpu_count
 import tempfile
 from PIL import Image
 import numpy as np
-from scipy import ndimage, misc
+from scipy import misc
 
 from atlas_conversion.utils import calculate_gradient
 
