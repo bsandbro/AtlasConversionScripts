@@ -171,12 +171,11 @@ def ImageSlices2TiledImage(filenames, loadImgFunction=load_png, cGradient=False,
         for i in range(0, numberOfSlices):
             row = int((math.floor(i / slicesPerAxis)) * size[0])
             col = int((i % slicesPerAxis) * size[1])
-            box = (int(col), int(row), int(col + size[0]), int(row + size[1]))
+            box = (int(col), int(row))
 
             s = gradient_data[:, :, i, :]
             im = Image.fromarray(np.array(s))
-            gradient.paste(im, box)
-            print "processed gradient slice  : " + str(i+1) + "/" + str(numberOfSlices)  # filename
+            gradient.paste(im,box)
             print(("processed gradient slice  : " + str(i+1) + "/" + str(numberOfSlices)))  # filename
 
         try:
