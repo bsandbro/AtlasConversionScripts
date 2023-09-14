@@ -1,4 +1,4 @@
-Atlas Conversion Scripts
+Atlas Conversion Scripts (python3 package version)
 ========================
 
 Introduction
@@ -19,17 +19,21 @@ You can found the necessary information about how you can use the scripts and ho
 
 Set-up
 ------
-To easy install the required dependencies we provide [Anaconda](https://www.continuum.io/downloads) `environment` files.
+This package utilizes a setup.py file to install the necessary dependencies and creates a cli command to run the scripts. 
 
-### Windows
+To install the package, run the following command from the root directory of the repository:
 
-    conda env create -f environment.yml
-    activate volren-atlas
+```bash
+pip install -e .
+```
 
-### Linux
+Running
+-------
+To run the script, you can use the following command after installation in your environment:
 
-    conda env create -f environment-linux.yml
-    source activate volren-atlas
+```bash
+atlas-conversion <arguments>
+```
 
 Related Publication
 -------------------
