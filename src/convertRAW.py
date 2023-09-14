@@ -66,9 +66,9 @@ def gaussian_filter(block, axis):
 # This function calculates the gradient from a 3 dimensional dask array
 def calculate_gradient(arr):
     axises = [1, 0, 2]  # Match RGB
-    g = da.ghost.ghost(arr, depth={0: 1, 1: 1, 2: 1},  boundary={0: 'reflect', 1: 'reflect', 2: 'reflect'})
+    g = da.overlap.overlap(arr, depth={0: 1, 1: 1, 2: 1},  boundary={0: 'reflect', 1: 'reflect', 2: 'reflect'})
     derivatives = [g.map_blocks(gaussian_filter, axis) for axis in axises]
-    derivatives = [da.ghost.trim_internal(d, {0: 1, 1: 1, 2: 1}) for d in derivatives]
+    derivatives = [da.overlap.trim_internal(d, {0: 1, 1: 1, 2: 1}) for d in derivatives]
     gradient = da.stack(derivatives, axis=3)
     return normalize(gradient)
 
