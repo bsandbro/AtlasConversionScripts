@@ -20,7 +20,7 @@ import errno
 import math
 from multiprocessing import cpu_count
 import tempfile
-import dask as da
+import dask.array as da
 import h5py
 import numpy as np
 from PIL import Image
