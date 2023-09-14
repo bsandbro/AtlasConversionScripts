@@ -1,5 +1,5 @@
 import os
-import errno
+from PIL import Image
 from dask import delayed
 import dask.array as da
 from scipy import ndimage
@@ -39,39 +39,18 @@ def calculate_gradient(arr):
 # It also writes several versions in different sizes determined by dimensions
 def write_versions(tileImage, tileGradient, outputFilename, dimensions=None):
     if dimensions is None:
-        dimensions = [8192, 4096, 2048, 1024, 512]
-    try:
-        print('Creating folder', os.path.dirname(outputFilename), '...', end=' ')
-        os.makedirs(os.path.dirname(outputFilename))
-    except OSError as exc:
-        if exc.errno == errno.EEXIST and os.path.isdir(os.path.dirname(outputFilename)):
-            print('was already there.')
-        else:
-            print(', folders might not be created, trying to write anyways...')
-    except:
-        print("Could not create folders, trying to write anyways...")
-
-    print("Writing complete image: " + outputFilename + "_full.png")
-    try:
-        tileImage.save(outputFilename + "_full.png", "PNG")
+        dimensions = [8192, 4096, 2048, 1024, 512, 256]
+    tileImage.save(outputFilename + "_full.png", "PNG")
+    if tileGradient:
+        tileGradient.save(outputFilename + "_gradient_full.png", "PNG")
+    for dimension in [x for x in dimensions if x < tileImage.size[0]]:
+        print("Writing image with size: " + str(dimension) + "...")
+        im = tileImage.resize((dimension, dimension), Image.BICUBIC)
+        im.save(outputFilename + "_" + str(dimension) + ".png")
         if tileGradient:
-            tileGradient.save(outputFilename + "_gradient_full.png", "PNG")
-    except:
-        print("Failed writing ", outputFilename + "_full.png")
-    for dim in dimensions:
-        if tileImage.size[0] > dim:
-            print("Writing " + str(dim) + "x" + str(dim) + " version: " + outputFilename + "_" + str(dim) + ".png")
-            try:
-                tmpImage = tileImage.resize((dim, dim))
-                tmpImage.save(outputFilename + "_" + str(dim) + ".png", "PNG")
-            except:
-                print("Failed writing ", outputFilename, "_", str(dim), ".png")
-            if tileGradient:
-                try:
-                    tmpImage = tileGradient.resize((dim, dim))
-                    tmpImage.save(outputFilename + "_gradient_" + str(dim) + ".png", "PNG")
-                except:
-                    print("Failed writing ", outputFilename, "_gradient_", str(dim), ".png")
+            im = tileGradient.resize((dimension, dimension), Image.BICUBIC)
+            print("Writing gradient with size: " + str(dimension) + "...")
+            im.save(outputFilename + "_" + str(dimension) + "_gradient.png")
 
 
 # This function lists the files within a given directory dir
