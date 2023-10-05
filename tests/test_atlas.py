@@ -37,20 +37,14 @@ class TestAtlasClass(unittest.TestCase):
 
 class TestAtlasConversion(unittest.TestCase):
     def setUp(self):
-        # Create an Atlas instance using the dummy loader
         self.atlas_obj = Atlas(dummy_loader)
-        self.atlas_obj.load("")  # Load dummy images
-        self.atlas_obj.convert()  # Convert into an atlas
+        self.atlas_obj.load("")
+        self.atlas_obj.convert()
 
     def test_convert(self):
-        # Check if the atlas is created
         self.assertIsNotNone(self.atlas_obj.atlas)
-
-        # Since there are 10 images, the size should be 4 (ceil(sqrt(10))).
         self.assertEqual(self.atlas_obj.size, 4)
-
-        # Check atlas shape
-        self.assertEqual(self.atlas_obj.atlas.shape, (512, 512, 3))  # 4 images * 128 pixels each
+        self.assertEqual(self.atlas_obj.atlas.shape, (512, 512, 3))
 
         # Check if the images are placed correctly with increasing color values
         for i in range(10):
@@ -72,13 +66,11 @@ class TestGradientComputation(unittest.TestCase):
 
     def test_compute_gradient_basic_z(self):
         gradient_image = self.atlas_obj.compute_gradient()
-
-        # Convert the PIL image to a numpy array
         gradient_data = np.array(gradient_image)
 
         # Check the gradient image type and shape
         self.assertIsInstance(gradient_image, Image.Image)
-        self.assertEqual(gradient_image.size, (512, 512))  # 4 images * 128 pixels each in a square format
+        self.assertEqual(gradient_image.size, (512, 512))
         self.assertEqual(gradient_data.shape, (512, 512, 3))  # 3 channels (RGB)
 
         for i in range(3):
@@ -106,12 +98,10 @@ class TestAtlasFileOutput(unittest.TestCase):
             output_base_path = os.path.join(tmpdirname, "test_output")
             self.atlas_obj.write(output_base_path, gradient=True)
 
-            # Now, check if files have been created
             self.assertTrue(os.path.exists(output_base_path + "_AtlasDim.txt"))
             self.assertTrue(os.path.exists(output_base_path + "_full.png"))
             self.assertTrue(os.path.exists(output_base_path + "_gradient_full.png"))
 
-            # Check for various sizes
             for size in [8192, 4096, 2048, 1024, 512]:
                 if size < self.atlas_obj.atlas.shape[0]:
                     self.assertTrue(os.path.exists(f"{output_base_path}_{size}.png"))
@@ -122,11 +112,9 @@ class TestAtlasFileOutput(unittest.TestCase):
             output_base_path = os.path.join(tmpdirname, "test_output")
             self.atlas_obj.write(output_base_path, gradient=False)
 
-            # Now, check if files have been created
             self.assertTrue(os.path.exists(output_base_path + "_AtlasDim.txt"))
             self.assertTrue(os.path.exists(output_base_path + "_full.png"))
 
-            # Check for various sizes
             for size in [8192, 4096, 2048, 1024, 512]:
                 if size < self.atlas_obj.atlas.shape[0]:
                     self.assertTrue(os.path.exists(f"{output_base_path}_{size}.png"))

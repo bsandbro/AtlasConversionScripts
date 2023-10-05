@@ -12,7 +12,6 @@ from tempfile import TemporaryDirectory
 
 
 def generate_random_image(size=(128, 128)):
-    """Generate a random RGB image of the specified size."""
     return Image.fromarray(
         np.array(
             [[[random.randint(0, 255) for _ in range(3)] for _ in range(size[0])] for _ in range(size[1])],
@@ -25,11 +24,9 @@ class TestDICOM(unittest.TestCase):
 
     def setUp(self):
         self.num_slices = 10
-        # Generate random slices
         self.slices = [generate_random_image() for _ in range(self.num_slices)]
 
     def generate_dicom_slices(self, temp_dir):
-        """Generate minimal DICOM slices."""
         for idx, slice_img in enumerate(self.slices):
             ds = Dataset()
 
@@ -74,7 +71,6 @@ class TestPNG(unittest.TestCase):
         self.slices = [generate_random_image() for _ in range(self.num_slices)]
 
     def generate_png_slices(self, temp_dir):
-        """Generate random PNG slices."""
         for idx, slice_img in enumerate(self.slices):
             slice_img.save(os.path.join(temp_dir, f"slice_{idx}.png"))
 
@@ -97,7 +93,6 @@ class TestNRRD(unittest.TestCase):
         self.volume = np.stack([np.array(slice_) for slice_ in self.slices], axis=2)
 
     def generate_nrrd_volume(self, filepath):
-        """Save the generated volume as an NRRD file."""
         nrrd.write(filepath, self.volume)
 
     def test_nrrd_loader(self):
@@ -120,13 +115,11 @@ class TestRAW(unittest.TestCase):
         self.slices = [generate_random_image() for _ in range(self.num_slices)]
 
     def generate_raw_data_rgb(self, filepath):
-        """Save the generated slices as a raw binary file."""
         with open(filepath, 'wb') as raw_file:
             for slice_ in self.slices:
                 raw_file.write(slice_.tobytes())
 
     def generate_raw_data_grayscale(self, filepath):
-        """Save the generated slices as a raw binary file."""
         with open(filepath, 'wb') as raw_file:
             for slice_ in self.slices:
                 raw_file.write(slice_.convert('L').tobytes())
