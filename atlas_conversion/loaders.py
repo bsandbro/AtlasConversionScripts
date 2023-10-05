@@ -41,12 +41,13 @@ def dicom_loader(path, resize=None, interpolation=Image.BICUBIC):
     return [np.array(slice_) for slice_ in slices]
 
 
-def raw_loader(filename, size_of_raw=(256, 256), slices=128, resize=None,
-               interpolation=Image.BICUBIC):
+def raw_loader(filename, *, size_of_raw, channels, slices, resize=None, interpolation=Image.BICUBIC):
     with open(filename, "rb") as f:
         data_slices = []
         for _ in range(slices):
-            raw_data = np.fromfile(f, 'uint8', size_of_raw[0] * size_of_raw[1]).reshape(size_of_raw)
+            raw_data = np.fromfile(f, 'uint8', size_of_raw[0] * size_of_raw[1] * channels).reshape(*size_of_raw, channels)
+            if channels == 1:
+                raw_data = raw_data.squeeze(-1)
             data_slices.append(Image.fromarray(raw_data))
 
         if resize:
