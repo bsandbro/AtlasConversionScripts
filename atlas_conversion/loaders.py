@@ -45,11 +45,11 @@ def raw_loader(filename, *, size_of_raw, channels, slices, resize=None, interpol
     with open(filename, "rb") as f:
         data_slices = []
         for _ in range(slices):
-            raw_data = np.fromfile(f, 'uint8', size_of_raw[0] * size_of_raw[1] * channels)
-            reshaped_raw_data = raw_data.reshape((size_of_raw[0], size_of_raw[1], channels))
+            raw_data = np.fromfile(f, 'uint8', size_of_raw[0] *
+                                   size_of_raw[1] * channels).reshape(*size_of_raw, channels)
             if channels == 1:
-                reshaped_raw_data = raw_data.squeeze(-1)
-            data_slices.append(Image.fromarray(reshaped_raw_data))
+                raw_data = raw_data.squeeze(-1)
+            data_slices.append(Image.fromarray(raw_data))
 
         if resize:
             data_slices = [resize_image(slice_, resize, interpolation) for slice_ in data_slices]
