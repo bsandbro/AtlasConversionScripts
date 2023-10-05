@@ -1,4 +1,5 @@
 import os
+import numpy as np
 from PIL import Image
 from dask import delayed
 import dask.array as da
@@ -25,13 +26,15 @@ def gaussian_filter(block, axis, sigma_value=2):
     return ndimage.gaussian_filter1d(block, sigma=sigma_value, axis=axis, order=1)
 
 
-# This function calculates the gradient from a 3 dimensional dask array
-def calculate_gradient(arr):
-    axes = [1, 0, 2]  # Match RGB
-    g = da.overlap.overlap(arr, depth={0: 1, 1: 1, 2: 1}, boundary={0: 'reflect', 1: 'reflect', 2: 'reflect'})
+# This function calculates the gradient from a 3-dimensional dask array
+def calculate_gradient(slices):
+    axes = [1, 0, 2]
+    overlap_depth = {0: 1, 1: 1, 2: 1}
+    overlap_boundary = {0: 'reflect', 1: 'reflect', 2: 'reflect'}
+    g = da.overlap.overlap(slices, depth=overlap_depth, boundary=overlap_boundary)
     derivatives = [g.map_blocks(gaussian_filter, axis) for axis in axes]
-    derivatives = [da.overlap.trim_internal(d, {0: 1, 1: 1, 2: 1}) for d in derivatives]
-    gradient = da.stack(derivatives, axis=3)
+    derivatives = [da.overlap.trim_overlap(d, depth=overlap_depth,  boundary=overlap_boundary) for d in derivatives]
+    gradient = da.stack(derivatives, axis=3).compute()
     return normalize(gradient)
 
 
