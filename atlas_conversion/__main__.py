@@ -22,7 +22,7 @@ def main():
     loader = loaders_map[arguments.format]
 
     print("Loading images...")
-    atlas_obj = Atlas(loader, resize=arguments.resize, **arguments.loader_options)
+    atlas_obj = Atlas(loader, **arguments.loader_options)
     atlas_obj.load(arguments.input)
 
     print("Converting images...")
