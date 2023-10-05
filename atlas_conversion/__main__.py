@@ -81,7 +81,6 @@ Contact mailto:volumerendering@vicomtech.org''',
 
 
 def check_and_parse_args(parser):
-    print("Parsing arguments...")
     arguments = parser.parse_args()
     loader_options = {}
     if arguments.resize:

@@ -32,8 +32,10 @@ Running
 To run the script, you can use the following command after installation in your environment:
 
 ```bash
-atlas-conversion <arguments>
+atlas_conversion <path_to_input_file_or_directory> <path_to_output_file_base_name>
 ```
+
+Further arguments are documented in `atlas_conversion --help`
 
 Related Publication
 -------------------
