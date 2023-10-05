@@ -15,6 +15,7 @@ class Atlas:
 
     Attributes:
         loader: a loader function that loads the atlas slices as list of RGB8 numpy arrays
+        **loader_options: additional options that are passed to the loader function as keyword arguments
     """
 
     def __init__(self, loader, **loader_options):
