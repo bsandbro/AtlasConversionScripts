@@ -40,7 +40,7 @@ class Atlas:
             row_dim, col_dim = self.slices[0].shape[0], self.slices[0].shape[1]
             self.atlas[row:row + row_dim, col:col + col_dim, :] = image_slice
 
-    def write(self, output_filename, gradient=False):
+    def write(self, output_filename, gradient=False, scaled_outputs=False):
         with open(str(output_filename) + "_AtlasDim.txt", 'w') as f:
             f.write(str((len(self.slices), (self.size, self.size))))
         im = Image.fromarray(self.atlas)
@@ -48,7 +48,7 @@ class Atlas:
         if gradient:
             gradient = self.compute_gradient()
             gradient.save(output_filename + "_gradient_full.png", "PNG")
-        for dimension in [x for x in [8192, 4096, 2048, 1024, 512] if x < self.atlas.shape[0]]:
+        for dimension in [x for x in [8192, 4096, 2048, 1024, 512] if x < self.atlas.shape[0]] if scaled_outputs else []:
             print("Writing image with size: " + str(dimension) + "...")
             im = im.resize((dimension, dimension), Image.BICUBIC)
             im.save(output_filename + "_" + str(dimension) + ".png")

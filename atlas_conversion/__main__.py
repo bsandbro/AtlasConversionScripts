@@ -32,7 +32,7 @@ def main():
         print("Calculating gradient and writing images... (this may take a while)")
     else:
         print("Writing images...")
-    atlas_obj.write(arguments.output, gradient=arguments.gradient)
+    atlas_obj.write(arguments.output, gradient=arguments.gradient, scaled_outputs=arguments.scaled_outputs)
 
     print("Done!")
     return 0
@@ -76,6 +76,9 @@ Contact mailto:volumerendering@vicomtech.org''',
     parser.add_argument('--raw-channels', type=int, choices=[1, 3],
                         help='Number of channels (1 for grayscale, 3 for RGB) in the raw data, required if format is '
                              'raw, otherwise ignored.')
+    parser.add_argument('--scaled-outputs', action='store_true',
+                        help='Generate scaled outputs at resolutions [8192, 4096, 2048, 1024, 512] if the full atlas'
+                             'dimensions are  larger')
 
     return parser
 
