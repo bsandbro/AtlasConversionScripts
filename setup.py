@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='atlas_conversion',
@@ -6,9 +6,8 @@ setup(
     packages=['atlas_conversion'],
     install_requires=['numpy',
                       'scipy',
-                      'h5py',
                       'dask',
-                      'pillow'
+                      'pillow',
                       'pydicom'],
     entry_points={
         'console_scripts': [
