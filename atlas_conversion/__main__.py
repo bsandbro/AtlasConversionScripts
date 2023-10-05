@@ -106,5 +106,6 @@ def check_raw_format_requirements(arguments, parser):
         if getattr(arguments, arg) is None:
             parser.error(error_msg)
 
+
 if __name__ == "__main__":
     sys.exit(main())

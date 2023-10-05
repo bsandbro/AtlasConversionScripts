@@ -5,6 +5,7 @@ from PIL import Image
 
 from atlas_conversion.utils import normalize_rgb, calculate_gradient
 
+
 class Atlas:
     """
     Atlas class

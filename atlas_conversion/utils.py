@@ -20,13 +20,14 @@ def normalize(block):
     t0 = decr(block, minimum)
     return t0 / r.compute(), -minimum / r.compute()
 
+
 def normalize_rgb(g_background, gradient_data):
     gradient_data *= 255
     g_background = int(g_background * 255)
     gradient_data = gradient_data.astype(np.uint8)
     return g_background, gradient_data
 
-# Calculate derivatives function
+
 def gaussian_filter(block, axis, sigma_value=2):
     return ndimage.gaussian_filter1d(block, sigma=sigma_value, axis=axis, order=1)
 

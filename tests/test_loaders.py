@@ -124,6 +124,7 @@ class TestRAW(unittest.TestCase):
         with open(filepath, 'wb') as raw_file:
             for slice_ in self.slices:
                 raw_file.write(slice_.tobytes())
+
     def generate_raw_data_grayscale(self, filepath):
         """Save the generated slices as a raw binary file."""
         with open(filepath, 'wb') as raw_file:
@@ -159,4 +160,4 @@ class TestRAW(unittest.TestCase):
             self.generate_raw_data_rgb(raw_path)
 
             with self.assertRaises(TypeError):
-                raw_loader(raw_path, slices=self.num_slices, channels=3)
+                raw_loader(raw_path, size_of_raw=None, slices=self.num_slices, channels=3)
