@@ -5,7 +5,7 @@ Introduction
 -------------
 This repository contains some scripts to help converting 3D volume data into a WebGL compatible 2D texture atlas.
 
-The scripts allow you to generate an atlas from different types of volume data sources. This are the supported data types:
+The scripts allow you to generate an atlas from different types of volume data sources. These are the supported data types:
 *	Common image formats like __PNG__, __JPEG__... which are supported by _PIL_
 *	__DICOM__
 *	__RAW__ 
