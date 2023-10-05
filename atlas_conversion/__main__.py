@@ -9,20 +9,50 @@ from atlas_conversion.loaders import png_loader, dicom_loader, nrrd_loader, raw_
 # Main program - CLI with argparse - #
 ######################################
 def main():
-    # Define th CLI
+    parser = create_parser()
+    arguments = check_and_parse_args(parser)
+
+    loaders_map = {
+        "png": png_loader,
+        "dicom": dicom_loader,
+        "nrrd": nrrd_loader,
+        "raw": raw_loader
+    }
+
+    loader = loaders_map[arguments.format]
+
+    print("Loading images...")
+    atlas_obj = Atlas(loader, resize=arguments.resize, **arguments.loader_options)
+    atlas_obj.load(arguments.input)
+
+    print("Converting images...")
+    atlas_obj.convert()
+
+    if arguments.gradient:
+        print("Calculating gradient and writing images... (this may take a while)")
+    else:
+        print("Writing images...")
+    atlas_obj.write(arguments.output, gradient=arguments.gradient)
+
+    print("Done!")
+    return 0
+
+
+def create_parser():
     parser = argparse.ArgumentParser(prog='Atlas Generator',
                                      description='''
 Atlas generation utility
---------------------------\n
+--------------------------
 
 This application converts the slices found in a folder into a tiled 2D texture
-image in PNG format.\nIt uses Python with PIL, numpy and pydicom packages.
-\n
+image in PNG format.
+It uses Python 3 with Pillow, numpy, pydicom, nrrd, scipy, and dask.
+
 Note: this version does not process several folders recursively.''',
                                      epilog='''
 This code was created by Luis Kabongo.
-Modified by Ander Arbelaiz to add gradient calculation.\n
-Modified by Ben Sandbrook for python 3 compatibility, packaging and CLI.\n
+Modified by Ander Arbelaiz to add gradient calculation.
+Modified by Ben Sandbrook for python 3 compatibility, packaging, CLI, and testing.
 Information links:
  - https://github.com/VolumeRC/AtlasConversionScripts/wiki
  - http://www.volumerc.org
@@ -40,33 +70,42 @@ Contact mailto:volumerendering@vicomtech.org''',
                         help='standard deviation for the gaussian kernel used for the gradient computation')
     parser.add_argument('--format', '-f', type=str, default="png", choices=["png", "dicom", "nrrd", "raw"],
                         help='format of the input images, default is png')
+    parser.add_argument('--raw-size', nargs=2, metavar=('width', 'height'), type=int,
+                        help='Size of the raw image, required if format is raw, otherwise ignored.')
+    parser.add_argument('--raw-slices', type=int,
+                        help='Number of slices in the raw data, required if format is raw, otherwise ignored..')
+    parser.add_argument('--raw-channels', type=int, choices=[1, 3],
+                        help='Number of channels (1 for grayscale, 3 for RGB) in the raw data, required if format is '
+                             'raw, otherwise ignored.')
 
-    # Obtain the parsed arguments
+    return parser
+
+
+def check_and_parse_args(parser):
     print("Parsing arguments...")
     arguments = parser.parse_args()
+    loader_options = {}
+    if arguments.resize:
+        loader_options["resize"] = arguments.resize
+    if arguments.format == "raw":
+        check_raw_format_requirements(arguments, parser)
+        loader_options["size"] = arguments.raw_size
+        loader_options["num_slices"] = arguments.raw_slices
+        loader_options["num_channels"] = arguments.raw_channels
+    arguments.loader_options = loader_options
+    return arguments
 
-    loaders_map = {
-        "png": (png_loader, ".png"),
-        "dicom": (dicom_loader, ".dcm"),
-        "nrrd": (nrrd_loader, ".nrrd"),
-        "raw": (raw_loader, ".raw")
+
+def check_raw_format_requirements(arguments, parser):
+    """Ensure all required arguments for raw format are present."""
+    required_args = {
+        "raw_size": "--raw-size is required if format is raw",
+        "raw_slices": "--raw-slices is required if format is raw",
+        "raw_channels": "--raw-channels is required if format is raw"
     }
-
-    loader, ext = loaders_map[arguments.format]
-
-    print("Loading images...")
-    atlas_obj = Atlas(loader, resize=arguments.resize)
-    atlas_obj.load(arguments.input)
-
-    print("Converting images...")
-    atlas_obj.convert()
-
-    print("Writing images...")
-    atlas_obj.write(arguments.output, gradient=arguments.gradient)
-
-    print("Done!")
-    return 0
-
+    for arg, error_msg in required_args.items():
+        if getattr(arguments, arg) is None:
+            parser.error(error_msg)
 
 if __name__ == "__main__":
     sys.exit(main())
