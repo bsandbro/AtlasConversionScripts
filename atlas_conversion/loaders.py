@@ -12,7 +12,7 @@ def resize_image(image, size, interpolation):
 
 def png_loader(path, resize=None, interpolation=Image.BICUBIC):
     filenames = sorted([os.path.join(path, f) for f in os.listdir(path)])
-    images = [Image.open(f).convert('RGB') for f in filenames if f.endswith(".png")]
+    images = [Image.open(f).convert('RGB') for f in filenames if f.lower().endswith(".png")]
 
     if resize:
         images = [resize_image(img, resize, interpolation) for img in images]
@@ -32,7 +32,7 @@ def nrrd_loader(path, resize=None, interpolation=Image.BICUBIC):
 
 def dicom_loader(path, resize=None, interpolation=Image.BICUBIC):
     filenames = sorted([os.path.join(path, f) for f in os.listdir(path)])
-    dicom_files = [pydicom.dcmread(f, force=True) for f in filenames if f.endswith(".dcm")]
+    dicom_files = [pydicom.dcmread(f, force=True) for f in filenames if f.lower().endswith(".dcm")]
     slices = [Image.fromarray(f.pixel_array) for f in dicom_files if hasattr(f, "SliceLocation")]
 
     if resize:
