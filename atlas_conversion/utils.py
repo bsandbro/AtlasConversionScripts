@@ -40,20 +40,20 @@ def calculate_gradient(slices):
 
 # This functions takes a (tiled) image and writes it to a png file with base filename outputFilename.
 # It also writes several versions in different sizes determined by dimensions
-def write_versions(tileImage, tileGradient, outputFilename, dimensions=None):
+def write_versions(tile_image, tile_gradient, output_filename, dimensions=None):
     if dimensions is None:
-        dimensions = [8192, 4096, 2048, 1024, 512, 256]
-    tileImage.save(outputFilename + "_full.png", "PNG")
-    if tileGradient:
-        tileGradient.save(outputFilename + "_gradient_full.png", "PNG")
-    for dimension in [x for x in dimensions if x < tileImage.size[0]]:
+        dimensions = [8192, 4096, 2048, 1024, 512]
+    tile_image.save(output_filename + "_full.png", "PNG")
+    if tile_gradient:
+        tile_gradient.save(output_filename + "_gradient_full.png", "PNG")
+    for dimension in [x for x in dimensions if x < tile_image.size[0]]:
         print("Writing image with size: " + str(dimension) + "...")
-        im = tileImage.resize((dimension, dimension), Image.BICUBIC)
-        im.save(outputFilename + "_" + str(dimension) + ".png")
-        if tileGradient:
-            im = tileGradient.resize((dimension, dimension), Image.BICUBIC)
+        im = tile_image.resize((dimension, dimension), Image.BICUBIC)
+        im.save(output_filename + "_" + str(dimension) + ".png")
+        if tile_gradient:
+            im = tile_gradient.resize((dimension, dimension), Image.BICUBIC)
             print("Writing gradient with size: " + str(dimension) + "...")
-            im.save(outputFilename + "_" + str(dimension) + "_gradient.png")
+            im.save(output_filename + "_" + str(dimension) + "_gradient.png")
 
 
 # This function lists the files within a given directory dir
