@@ -56,7 +56,6 @@ Modified by Ben Sandbrook for python 3 compatibility, packaging, CLI, and testin
 Information links:
  - https://github.com/VolumeRC/AtlasConversionScripts/wiki
  - http://www.volumerc.org
- - http://demos.vicomtech.org
 Contact mailto:volumerendering@vicomtech.org''',
                                      formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('input', type=str, help='path to the set of files to be processed')
