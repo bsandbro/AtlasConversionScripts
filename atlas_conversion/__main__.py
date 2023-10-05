@@ -1,8 +1,8 @@
 import argparse
 import sys
 
-from atlas_conversion.convertPNG import ImageSlices2TiledImage, load_png
-from atlas_conversion.utils import write_versions, listdir_fullpath
+from atlas_conversion.atlas import Atlas
+from atlas_conversion.loaders import png_loader, dicom_loader, nrrd_loader, raw_loader
 
 
 ######################################
@@ -10,78 +10,63 @@ from atlas_conversion.utils import write_versions, listdir_fullpath
 ######################################
 def main():
     # Define th CLI
-    parser = argparse.ArgumentParser(prog='PNG Atlas Generator',
+    parser = argparse.ArgumentParser(prog='Atlas Generator',
                                      description='''
-PNG Atlas generation utility
-----------------------------\n
+Atlas generation utility
+--------------------------\n
 
 This application converts the slices found in a folder into a tiled 2D texture
-image in PNG format.\nIt uses Python with PIL, numpy and pydicom packages are recommended for other formats.
+image in PNG format.\nIt uses Python with PIL, numpy and pydicom packages.
 \n
 Note: this version does not process several folders recursively.''',
                                      epilog='''
 This code was created by Luis Kabongo.
 Modified by Ander Arbelaiz to add gradient calculation.\n
+Modified by Ben Sandbrook for python 3 compatibility, packaging and CLI.\n
 Information links:
  - https://github.com/VolumeRC/AtlasConversionScripts/wiki
  - http://www.volumerc.org
  - http://demos.vicomtech.org
 Contact mailto:volumerendering@vicomtech.org''',
                                      formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('input', type=str, help='must contain a path to one set of PNG files to be processed')
+    parser.add_argument('input', type=str, help='path to the set of files to be processed')
     parser.add_argument('output', type=str,
-                        help='must contain the path and base name of the desired output,\n'
-                             'extension will be added automatically')
+                        help='path and base name of the desired output file, extension added automatically')
     parser.add_argument('--resize', '-r', type=int, nargs=2, metavar=('x', 'y'),
-                        help='resizing of the input images x y, before processing')
+                        help='resize the input images x y before processing')
     parser.add_argument('--gradient', '-g', action='store_true',
                         help='calculate and generate the gradient atlas')
     parser.add_argument('--standard_deviation', '-std', type=int, default=2,
                         help='standard deviation for the gaussian kernel used for the gradient computation')
+    parser.add_argument('--format', '-f', type=str, default="png", choices=["png", "dicom", "nrrd", "raw"],
+                        help='format of the input images, default is png')
 
     # Obtain the parsed arguments
     print("Parsing arguments...")
     arguments = parser.parse_args()
 
-    # Filter only png files in the given folder
-    filenames_png = [x for x in listdir_fullpath(arguments.input) if ".png" in x]
+    loaders_map = {
+        "png": (png_loader, ".png"),
+        "dicom": (dicom_loader, ".dcm"),
+        "nrrd": (nrrd_loader, ".nrrd"),
+        "raw": (raw_loader, ".raw")
+    }
 
-    if not len(filenames_png) > 0:
-        print("No PNG files found in that folder, check your parameters or contact the authors :).")
-        return 2
+    loader, ext = loaders_map[arguments.format]
 
-    if arguments.resize:
-        width, height = arguments.resize[0], arguments.resize[1]
-    else:
-        width, height = None, None
+    print("Loading images...")
+    atlas_obj = Atlas(loader, resize=arguments.resize)
+    atlas_obj.load(arguments.input)
 
-    c_gradient = False
-    if arguments.gradient:
-        try:
-            global ndimage, misc, np, da, delayed, h5py
-            import numpy as np
-            import dask.array as da
-            import h5py
-            from dask import delayed
-            from scipy import ndimage, misc
-            c_gradient = True
-        except ImportError:
-            print("You need the following dependencies to also calculate the gradient: scipy, numpy, h5py and dask")
+    print("Converting images...")
+    atlas_obj.convert()
 
-    # From png files
-    imgTile, gradientTile, sliceResolution, numberOfSlices, slicesPerAxis = ImageSlices2TiledImage(filenames_png,
-                                                                                                   load_png,
-                                                                                                   c_gradient,
-                                                                                                   width,
-                                                                                                   height)
+    print("Writing images...")
+    atlas_obj.write(arguments.output, gradient=arguments.gradient)
 
-    # Write the output
-    print("Writing output...")
-    with open(str(arguments.output) + "_AtlasDim.txt", 'w') as f:
-        f.write(str((numberOfSlices, (slicesPerAxis, slicesPerAxis))))
+    print("Done!")
+    return 0
 
-    # Output is written in different sizes
-    write_versions(imgTile, gradientTile, arguments.output)
 
 if __name__ == "__main__":
     sys.exit(main())
